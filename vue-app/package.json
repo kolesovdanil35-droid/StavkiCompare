@@ -5,14 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run generate-sitemap && vue-tsc && vite build",
+    "build": "vue-tsc && vite build",
     "preview": "vite preview",
     "deploy": "npm run build && gh-pages -d dist",
-    "predeploy": "npm run build",
-    "generate-sitemap": "node scripts/generate-sitemap.js",
-    
+    "predeploy": "npm run build"
   },
   "dependencies": {
+    "@vueuse/head": "^2.0.1",
     "vue": "^3.3.8",
     "vue-router": "^4.2.5"
   },
