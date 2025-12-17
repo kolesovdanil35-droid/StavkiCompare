@@ -1,7 +1,16 @@
 
 <script setup lang="ts">
 import { RouterLink, RouterView, useRoute } from 'vue-router'
-
+import { useHead } from '@vueuse/head'
+useHead({
+  title: 'BetAggregator: Лучшие коэффициенты на спорт в режиме онлайн',
+  meta: [
+    
+    {
+      name: 'yandex-verification',
+      content: '716d3f5738e09bb9'
+    }],
+  })
 const route = useRoute()
 </script>
 
