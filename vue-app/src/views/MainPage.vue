@@ -117,7 +117,11 @@ useHead({
     {
       property: 'og:type',
       content: 'website'
-    }
+    },
+    {
+      name: 'yandex-verification',
+      content: '716d3f5738e09bb9'
+    },
   ],
   link: [
     {
