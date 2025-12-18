@@ -94,34 +94,7 @@ import { useHead } from '@vueuse/head'
 useHead({
   title: 'BetAggregator: Лучшие коэффициенты на спорт в режиме онлайн',
   meta: [
-    {
-      name: 'description',
-      content: 'Ставки на футбол, хоккей, баскетбол и киберспорт. Сравнение коэффициентов, live-ставки, аналитика и прогнозы. Регистрируйтесь для получения бонуса!'
-    },
-    {
-      name: 'keywords',
-      content: 'ставки на спорт, коэффициенты, беттинг, прогнозы на матчи, live ставки, спортивные события'
-    },
-    {
-      name: 'viewport',
-      content: 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes'
-    },
-    {
-      property: 'og:title',
-      content: 'BetAggregator: Лучшие коэффициенты на спорт'
-    },
-    {
-      property: 'og:description',
-      content: 'Онлайн ставки на спортивные события с лучшими коэффициентами'
-    },
-    {
-      property: 'og:type',
-      content: 'website'
-    },
-    {
-      name: 'yandex-verification',
-      content: '716d3f5738e09bb9'
-    },
+   
   ],
   link: [
     {
