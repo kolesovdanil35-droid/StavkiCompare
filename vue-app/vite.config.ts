@@ -2,27 +2,44 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 
+
 export default defineConfig({
   plugins: [vue()],
-  // КРИТИЧЕСКИ ВАЖНО: Указываем полный путь к подпапке
-  base: process.env.NODE_ENV === 'production' 
-    ? '/StavkiCompare/vue-app/'  // Полный путь: репозиторий + папка проекта
-    : '/',
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
-  },
-  build: {
-    outDir: 'dist',
-    // Генерируем относительные пути для ассетов
-    assetsDir: 'assets',
-    rollupOptions: {
-      output: {
-        assetFileNames: 'assets/[name]-[hash][extname]',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js'
-      }
-    }
-  }
-})
+ 
+   base: '/',
+   resolve: {
+     alias: {
+       '@': fileURLToPath(new URL('./src', import.meta.url))
+     }
+   },
+   server: {
+     host: '0.0.0.0',
+     port: 5173,
+     watch: {
+       usePolling: true,
+       interval: 500,
+     },
+     hmr: {
+       clientPort: 5173,
+       protocol: 'ws'
+     },
+     proxy: {
+       '/api': {
+         target: 'http://backend:3001',
+         changeOrigin: true,
+         secure: false
+       }
+     }
+   },
+   build: {
+     outDir: 'dist',
+     assetsDir: 'assets',
+     rollupOptions: {
+       output: {
+         assetFileNames: 'assets/[name]-[hash][extname]',
+         chunkFileNames: 'assets/[name]-[hash].js',
+         entryFileNames: 'assets/[name]-[hash].js'
+       }
+     }
+   }
+ })

@@ -1,0 +1,81 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: stavki-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_strong_password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stavki-backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=your_strong_password
+      - DB_NAME=postgres
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/api/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./backend/server.js
+          target: /app/server.js
+        - action: rebuild
+          path: ./backend/package.json
+
+  frontend-dev:
+    build:
+      context: ./vue-app
+      dockerfile: Dockerfile.dev
+    container_name: stavki-frontend-dev
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE=http://localhost:3001
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./vue-app/src:/app/src
+      - ./vue-app/public:/app/public
+      - ./vue-app/index.html:/app/index.html
+      - ./vue-app/vite.config.ts:/app/vite.config.ts
+      - ./vue-app/package.json:/app/package.json
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./vue-app
+      dockerfile: Dockerfile
+    container_name: stavki-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  postgres_data:

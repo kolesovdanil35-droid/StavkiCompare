@@ -11,7 +11,7 @@
                 <span class="logo-text">Ставки</span>
                 <span class="logo-icon">
                     <img 
-                        src="../assets/Logo-for-OddsBet 2.png" 
+                        src="../../assets/Logo-for-OddsBet 2.png" 
                         alt="Logo"
                         class="logo-img"
                     >
@@ -60,20 +60,16 @@ const scrollProgress = ref(0);
     }
     
     .logo-text{
-        font-family: 'Roboto', sans-serif;
-        font-style: normal;
         font-weight: 700; 
         font-size: 84px;
         line-height: 1;
-        color: whitesmoke;
+        color: var(--main-font-color);
     }
     
     .logo-img {
         width: 100px;
         height: auto;
     }
-    
-    
     
     .profileMenu:hover {
         transform: scale(1.05);

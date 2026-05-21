@@ -7,12 +7,12 @@
 
     const handleWindowScroll = () => {
     const scrollY = window.scrollY || window.pageYOffset
-    // Плавное изменение прозрачности от 0 до 1 при скролле от 0 до 300px
+   
     scrollProgress.value = Math.min(1, scrollY / 200)
     }
     const bgOpacity = computed(() => 0.7 * scrollProgress.value);
 
-    // Вычисляем интенсивность размытия (от 0 до 15px)
+   
     const blurIntensity = computed(() => 12 * scrollProgress.value);
     onMounted(() => {
         window.addEventListener('scroll', handleWindowScroll)
@@ -42,24 +42,19 @@
                 <span v-if="route.path === '/news'" class="nav-indicator"></span>
                 </button>
             </router-link>
-                <button class="nav-button">
-                
-                Онлайн трансляции
-                <span v-if="route.path === '/'" class="nav-indicator"></span>
-                </button>
-                <button class="nav-button">
-                
-                Предстоящие события
-                <span v-if="route.path === '/'" class="nav-indicator"></span>
-                </button>
+               
+                <router-link to="/analis" class="nav-link" :class="{ active: route.path === '/analis' }">
                 <button class="nav-button">
                 
                 AI-анализ
-                <span v-if="route.path === '/'" class="nav-indicator"></span>
+                <span v-if="route.path === '/analis'" class="nav-indicator"></span>
                 </button>
+                </router-link>
+                 <router-link to="/profile" class="nav-link" :class="{ active: route.path === '/profile' }">
                  <div class="profileMenu">
                      <!-- Профильное меню -->
                 </div>
+                </router-link>
         </nav>
     </header>
 </template>
@@ -72,7 +67,7 @@
         display: flex;
         justify-content: center;
         gap: 32px;
-        margin: 40px;
+        margin: 10px;
         align-items: center;
     }
     .nav-button{
@@ -81,7 +76,7 @@
         border: transparent;
         border-radius: 12px;
         font-weight: 600;
-        color: white;
+        color: var(--main-font-color);
         padding: 6px 8px;
         opacity: 1;
     }
@@ -89,13 +84,26 @@
         background-color: rgb(90, 99, 113);
 
     }
+    .nav-link{
+        text-decoration: none;
+    }
+    .nav-link.active .profileMenu{
+        border-color: var(--accent-font-color);
+        background: rgba(0, 255, 36, 0.15);
+        box-shadow: 0 0 12px 2px #00ff2430;
+    }
     .profileMenu{
-        height: 75px;
-        width: 75px;
+        height: 50px;
+        width: 50px;
         border-radius: 50px;
-        border: 1px solid;
+        border: 1px solid var(--main-border);
         cursor: pointer;
-        transition: transform 0.2s ease;
+        transition: all 0.2s ease;
+        background: linear-gradient(135deg, rgba(0, 255, 36, 0.1), rgba(0, 255, 36, 0.05));
+    }
+    .profileMenu:hover{
+        border-color: var(--accent-font-color);
+        box-shadow: 0 0 12px 2px #00ff2420;
     }
     
 

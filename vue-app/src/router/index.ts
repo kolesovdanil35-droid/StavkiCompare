@@ -14,6 +14,16 @@ const router = createRouter({
       name: 'news',
       component: () => import('../views/NewsPage.vue')
     },
+    {
+      path: '/analis',
+      name: 'analis',
+      component: ()=>import('../views/Analizer.vue')
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('../views/ProfilePage.vue')
+    },
     // Добавляем fallback route для GitHub Pages
     {
       path: '/:pathMatch(.*)*',

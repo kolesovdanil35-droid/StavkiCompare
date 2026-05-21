@@ -1,16 +1,10 @@
-
 <template>
   <div class="news-page">
-    <div class="header">
-      <h1>Аналитика и Новости</h1>
-      <p>Экспертные обзоры, прогнозы и аналитика спортивных событий</p>
-    </div>
 
     <div class="content-grid">
       <!-- Основные статьи -->
       <div class="articles-section">
-        <h2 class="section-title">📊 Последние аналитические статьи</h2>
-        
+        <h2 class="section-title">Последние аналитические статьи</h2>
         <div class="articles-list">
           <article class="article-card" v-for="article in articles" :key="article.id">
             <div class="article-header">
@@ -23,7 +17,7 @@
             <p class="article-excerpt">{{ article.excerpt }}</p>
             <div class="article-footer">
               <div class="author">
-                <img :src="article.author.avatar" class="author-avatar" />
+                
                 <span class="author-name">{{ article.author.name }}</span>
                 <span class="author-role">{{ article.author.role }}</span>
               </div>
@@ -35,37 +29,20 @@
           </article>
         </div>
 
-        <!-- Вступление -->
-        <div class="intro-section">
-          <h3>Добро пожаловать в наш аналитический раздел!</h3>
-          <p>
-            Здесь вы найдете эксклюзивные материалы от наших экспертов, глубокий анализ команд и игроков, 
-            статистические выкладки и прогнозы на предстоящие события. Мы помогаем принимать взвешенные 
-            решения на основе данных, а не интуиции.
-          </p>
-          <p>
-            Наши аналитики ежедневно отслеживают десятки спортивных лиг и турниров, чтобы предоставить 
-            вам самую актуальную информацию. От футбола до киберспорта — мы охватываем все популярные 
-            дисциплины.
-          </p>
-          <button class="cta-btn" @click="showMoreArticles">
-            Показать больше статей
-            <span class="loader" v-if="loading">...</span>
-          </button>
-        </div>
       </div>
 
       <!-- Боковая панель с подкастом -->
       <aside class="sidebar">
-        <div class="podcast-card">
+        <h2 class="section-title">Подкасты</h2>
+        <div class="article-card">
           <div class="podcast-header">
-            <h3>🎙️ Подкаст "Ставки на Спорт"</h3>
+            <h3>Подкаст "Ставки на Спорт"</h3>
             <span class="podcast-badge">НОВЫЙ</span>
           </div>
           
           <div class="podcast-info">
             <div class="podcast-cover">
-              <div class="play-icon">▶</div>
+              <span class="play-icon">▶</span>
             </div>
             <div class="podcast-details">
               <h4>Эпизод #24: Анализ Чемпионата Европы по футболу</h4>
@@ -96,23 +73,6 @@
               <button class="platform-btn spotify">Spotify</button>
               <button class="platform-btn apple">Apple Podcasts</button>
               <button class="platform-btn youtube">YouTube</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Эксперты недели -->
-        <div class="experts-card">
-          <h3>👑 Эксперты недели</h3>
-          <div class="experts-list">
-            <div class="expert" v-for="expert in topExperts" :key="expert.id">
-              <img :src="expert.avatar" class="expert-avatar" />
-              <div class="expert-info">
-                <span class="expert-name">{{ expert.name }}</span>
-                <span class="expert-stats">Точность: {{ expert.accuracy }}%</span>
-              </div>
-              <div class="expert-profit" :class="{ positive: expert.profit > 0 }">
-                {{ expert.profit > 0 ? '+' : '' }}{{ expert.profit }}%
-              </div>
             </div>
           </div>
         </div>
@@ -226,14 +186,12 @@ const getCategoryColor = (category: string): string => {
 
 const openArticle = (id: number) => {
   console.log('Opening article:', id)
-  alert(`Статья #${id} откроется в будущем`)
 }
 
 const showMoreArticles = () => {
   loading.value = true
   setTimeout(() => {
     loading.value = false
-    alert('Функционал загрузки большего количества статей будет реализован позже')
   }, 1000)
 }
 </script>
@@ -243,25 +201,6 @@ const showMoreArticles = () => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 1rem;
-}
-
-.header {
-  text-align: center;
-  padding: 3rem 1rem;
-  margin-bottom: 2rem;
-}
-
-.header h1 {
-  font-size: 2.5rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 0.5rem;
-}
-
-.header p {
-  color: #6B7280;
-  font-size: 1.1rem;
 }
 
 .content-grid {
@@ -279,7 +218,10 @@ const showMoreArticles = () => {
 .section-title {
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
-  color: #1F2937;
+  
+  padding-left: 15px;
+  border-radius: 12px;
+  color: #BECBFF;
 }
 
 .articles-list {
@@ -290,17 +232,16 @@ const showMoreArticles = () => {
 }
 
 .article-card {
-  background: white;
-  border-radius: 12px;
+  background: rgb(20, 20, 20);
+  border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #ffffff2b;
   transition: transform 0.2s, box-shadow 0.2s;
-  border: 1px solid #E5E7EB;
 }
 
 .article-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 25px rgba(0, 255, 36, 0.1);
 }
 
 .article-header {
@@ -311,7 +252,7 @@ const showMoreArticles = () => {
 }
 
 .article-category {
-  color: white;
+  color: var(--main-font-color);
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -319,19 +260,19 @@ const showMoreArticles = () => {
 }
 
 .article-date {
-  color: #6B7280;
+  color: #9CA3AF;
   font-size: 0.9rem;
 }
 
 .article-title {
   font-size: 1.2rem;
   margin-bottom: 0.75rem;
-  color: #1F2937;
+  color: #BECBFF;
   line-height: 1.4;
 }
 
 .article-excerpt {
-  color: #4B5563;
+  color: #D1D5DB;
   line-height: 1.6;
   margin-bottom: 1.5rem;
 }
@@ -354,15 +295,15 @@ const showMoreArticles = () => {
 
 .author-name {
   font-weight: 500;
-  color: #374151;
+  color: #BECBFF;
 }
 
 .author-role {
   font-size: 0.8rem;
-  color: #6B7280;
-  background: #F3F4F6;
+  color: #9CA3AF;
+  background: #202325;
   padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 .read-more-btn {
@@ -370,8 +311,8 @@ const showMoreArticles = () => {
   align-items: center;
   gap: 0.5rem;
   background: transparent;
-  border: 2px solid #667eea;
-  color: #667eea;
+  border: 2px solid #00ff24;
+  color: #00ff24;
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-weight: 500;
@@ -380,8 +321,8 @@ const showMoreArticles = () => {
 }
 
 .read-more-btn:hover {
-  background: #667eea;
-  color: white;
+  background: #00ff24;
+  color: #1a1a1a;
 }
 
 .arrow {
@@ -389,19 +330,20 @@ const showMoreArticles = () => {
 }
 
 .intro-section {
-  background: linear-gradient(135deg, #F3F4F6, #E5E7EB);
-  border-radius: 12px;
+  background: #202325;
+  border-radius: 16px;
   padding: 2rem;
   margin-top: 2rem;
+  border: 1px solid #ffffff2b;
 }
 
 .intro-section h3 {
-  color: #1F2937;
+  color: #BECBFF;
   margin-bottom: 1rem;
 }
 
 .intro-section p {
-  color: #4B5563;
+  color: #D1D5DB;
   line-height: 1.6;
   margin-bottom: 1rem;
 }
@@ -411,8 +353,8 @@ const showMoreArticles = () => {
   align-items: center;
   gap: 0.5rem;
   margin-top: 1.5rem;
-  background: linear-gradient(135deg, #10B981, #059669);
-  color: white;
+  background: #00ff24;
+  color: #1a1a1a;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
@@ -423,6 +365,7 @@ const showMoreArticles = () => {
 
 .cta-btn:hover {
   transform: scale(1.05);
+  background: #00cc1d;
 }
 
 .loader {
@@ -432,15 +375,13 @@ const showMoreArticles = () => {
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
 }
 
 .podcast-card, .experts-card {
-  background: white;
-  border-radius: 12px;
+  background: rgb(20, 20, 20);
+  border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  border: 1px solid #E5E7EB;
+  border: 1px solid #ffffff2b;
 }
 
 .podcast-header {
@@ -451,12 +392,12 @@ const showMoreArticles = () => {
 }
 
 .podcast-header h3 {
-  color: #1F2937;
+  color: #BECBFF;
 }
 
 .podcast-badge {
-  background: #EF4444;
-  color: white;
+  background: #00ff24;
+  color: #1a1a1a;
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
   font-size: 0.7rem;
@@ -473,12 +414,12 @@ const showMoreArticles = () => {
   flex-shrink: 0;
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border-radius: 8px;
+  background: linear-gradient(135deg, #00ff24, #00cc1d);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #1a1a1a;
   font-size: 2rem;
 }
 
@@ -491,13 +432,13 @@ const showMoreArticles = () => {
 }
 
 .podcast-details h4 {
-  color: #1F2937;
+  color: #BECBFF;
   margin-bottom: 0.5rem;
   font-size: 1rem;
 }
 
 .podcast-description {
-  color: #6B7280;
+  color: #D1D5DB;
   font-size: 0.9rem;
   line-height: 1.4;
   margin-bottom: 0.75rem;
@@ -515,7 +456,7 @@ const showMoreArticles = () => {
 }
 
 .podcast-episodes h5 {
-  color: #4B5563;
+  color: #BECBFF;
   margin-bottom: 1rem;
 }
 
@@ -524,7 +465,7 @@ const showMoreArticles = () => {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 0;
-  border-bottom: 1px solid #F3F4F6;
+  border-bottom: 1px solid #ffffff2b;
 }
 
 .episode:last-child {
@@ -538,7 +479,7 @@ const showMoreArticles = () => {
 
 .episode-title {
   font-size: 0.9rem;
-  color: #374151;
+  color: #D1D5DB;
 }
 
 .episode-date {
@@ -547,8 +488,8 @@ const showMoreArticles = () => {
 }
 
 .play-btn {
-  background: #F3F4F6;
-  border: none;
+  background: #202325;
+  border: 1px solid #ffffff2b;
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -556,12 +497,17 @@ const showMoreArticles = () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #667eea;
+  color: #00ff24;
   font-size: 0.8rem;
 }
 
+.play-btn:hover {
+  background: #00ff24;
+  color: #1a1a1a;
+}
+
 .subscribe-section p {
-  color: #4B5563;
+  color: #BECBFF;
   margin-bottom: 1rem;
   font-size: 0.9rem;
 }
@@ -587,21 +533,21 @@ const showMoreArticles = () => {
 
 .platform-btn.spotify {
   background: #1DB954;
-  color: white;
+  color: var(--main-font-color);
 }
 
 .platform-btn.apple {
   background: #000;
-  color: white;
+  color: var(--main-font-color);
 }
 
 .platform-btn.youtube {
   background: #FF0000;
-  color: white;
+  color: var(--main-font-color);
 }
 
 .experts-card h3 {
-  color: #1F2937;
+  color: #BECBFF;
   margin-bottom: 1.5rem;
 }
 
@@ -616,8 +562,9 @@ const showMoreArticles = () => {
   align-items: center;
   gap: 1rem;
   padding: 0.75rem;
-  background: #F9FAFB;
-  border-radius: 8px;
+  background: #202325;
+  border-radius: 12px;
+  border: 1px solid #ffffff2b;
 }
 
 .expert-avatar {
@@ -632,24 +579,24 @@ const showMoreArticles = () => {
 
 .expert-name {
   font-weight: 500;
-  color: #374151;
+  color: #BECBFF;
 }
 
 .expert-stats {
   font-size: 0.8rem;
-  color: #6B7280;
+  color: #9CA3AF;
 }
 
 .expert-profit {
   font-weight: 600;
   padding: 0.3rem 0.6rem;
-  border-radius: 4px;
-  background: #10B981;
-  color: white;
+  border-radius: 6px;
+  background: #00ff24;
+  color: #1a1a1a;
 }
 
 .expert-profit.positive {
-  background: #10B981;
+  background: #00ff24;
 }
 
 @keyframes blink {

@@ -1,173 +1,223 @@
 <script setup lang="ts">
-    import { ref } from 'vue'
-
-    const props = defineProps({
-        innerMathes: String
-    })
-
-    interface Match {
-    id: number
-    team1: string
-    team2: string
-    odds1: string
-    odds2: string
-    drawOdds?: string
-    time: string
-    league?: string
-    leagueIcon?: string
-    sport: string
-    markets?: number
-    }
-
-    const dataSourse = ref<Match[]>([
-
-    ])
-
-    const liveMatches = ref<Match[]>([
-    {
-        id: 1,
-        team1: 'Манчестер Юнайтед',
-        team2: 'Челси',
-        odds1: '2.10',
-        odds2: '3.25',
-        drawOdds: '3.40',
-        time: '65\'',
-        sport: 'football'
-    },
-    {
-        id: 2,
-        team1: 'Golden State',
-        team2: 'LA Lakers',
-        odds1: '1.85',
-        odds2: '1.95',
-        time: 'Q3 08:32',
-        sport: 'basketball'
-    },
-    {
-        id: 3,
-        team1: 'Djokovic',
-        team2: 'Nadal',
-        odds1: '1.65',
-        odds2: '2.20',
-        time: 'Set 2',
-        sport: 'tennis'
-    }
-    ])
-
-    const upcomingMatches = ref<Match[]>([
-    {
-        id: 4,
-        team1: 'Барселона',
-        team2: 'Реал Мадрид',
-        odds1: '2.45',
-        odds2: '2.70',
-        time: '20:00',
-        league: 'La Liga',
-        leagueIcon: '⚽',
-        sport: 'football',
-        markets: 145
-    },
-    {
-        id: 5,
-        team1: 'Red Bull Racing',
-        team2: 'Mercedes',
-        odds1: '1.90',
-        odds2: '2.15',
-        time: 'Завтра 15:00',
-        league: 'Formula 1',
-        leagueIcon: '🏎️',
-        sport: 'formula1',
-        markets: 89
-    },
-    {
-        id: 6,
-        team1: 'Astralis',
-        team2: 'Na\'Vi',
-        odds1: '2.30',
-        odds2: '1.60',
-        time: '21:30',
-        league: 'ESL Pro League',
-        leagueIcon: '🎮',
-        sport: 'esports',
-        markets: 67
-    }
-    ])
-
-    switch (props.innerMathes) {
-        case 'live':
-            dataSourse.value = ([
-                ...liveMatches.value
-            ])
-            break;
+    import { computed, ref } from 'vue' 
+    import { Match } from '../../data/Match/IMtach'
     
-        case 'incoming':
-            dataSourse.value = ([
-                ...upcomingMatches.value
-            ])
-            break;
+    import Filters from './Filters.vue'
+    import EventModal from '../Modal/EventModal.vue'
+    
+    const showMathes = ref(false)
+    const sportSet = ref<Set<string>>(new Set())
+    const showModal = ref<boolean>(false)
+    const selectedMatchId = ref<number | null>(null)
+    const openModal = (eventId: number) => {
+        selectedMatchId.value = eventId
+        showModal.value = true
     }
-
-
+    const closeModal = () => {
+        showModal.value = false
+        selectedMatchId.value = null
+    }
+    const props = defineProps<{
+        innerMathes: string
+        dataSourse: Match[]
+    }>()
+    const filteredDataSourse = computed<Match[]>(()=>{
+        if(sportSet.value.size === 0) return props.dataSourse
+        else return props.dataSourse
+                .filter((item)=>sportSet.value.has(item.sport))
+    })
+    const filterSports = (sports:Set<string>) => {
+        sportSet.value = sports
+    }
 </script>
+
 <template>
-    <div class="eventPlace">
-      <div class="eventCard" v-for="event in dataSourse">
-        <span class="eventCardTittle">{{ event.sport }}</span>
-        <div class="eventCardBody">
-          <div class="teams">
-            <span class="team1">{{ event.team1 }}</span>
-            <span class="score">0:3</span>
-            <span class="team2">{{ event.team2 }}</span>
-          </div>
-          <div class="footerInfo">
-            <span class="playTime">{{ event.time }}</span>
-            <span class="ods"> {{event.odds1}} <span v-if="event.drawOdds">| {{ event.drawOdds }}</span> | {{ event.odds2 }}</span>
-          </div>
-
+    <div class="match-section">
+        <div class="section-header" @click="showMathes = !showMathes">
+            <div style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;">
+                <span class="live-dot" v-if="innerMathes === 'Live'"></span>
+                {{ innerMathes }}
+            </div>
+            
+            <span class="hover-show" >{{ showMathes ? "Скрыть" : "Показать матчи" }}</span>
         </div>
-      </div>
-    </div>
-</template>
-<style lang="css" scoped>
-    .eventCard{
-        background-color: rgb(20, 20, 20);
-        padding: 8px;
-        border: #dffcee6c;
-        border-radius:16px;
-        min-width: 350px;
-    }
-    .eventPlace{
-        margin-bottom: 24px;
-        /* Rectangle 26 */
-        background: inherit;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-around;
-    }
-    .eventCardTittle{
-        font-size: 28px;
-    }
-    .eventCardBody{
-        border-top: 1px solid #00ff2447;
-        background: inherit;
-        color:#BECBFF;
-        padding: 8px;
         
-        /* opacity: 0.25; */
-        /* Note: backdrop-filter has minimal browser support */
-        /* border-radius: 20px; */
+        
+        <TransitionGroup name="slide">
+            <Filters v-if="showMathes" :dataSourse="props.dataSourse" @filter-changed="filterSports"></Filters>
+            <div class="match-grid" v-if="showMathes">
+                
+                <div class="card match-card" v-for="event in filteredDataSourse" :key="event.id">
+                    <div class="card-top">
+                        <span class="card-top-info">{{ event.sport }}</span>
+                        <span class="card-top-info">{{ event.time }}</span>
+                    </div>
+            
+                    <div class="matchup">
+                        <span class="team">{{ event.team1 }}</span>
+                        <span class="score">{{ event.score ? event.score : 'VS' }}</span>
+                        <span class="team">{{ event.team2 }}</span>
+                    </div>
+            
+                    <div class="odds">
+                        <button class="odd" @click="openModal(event.id)">{{ event.odds1 }}</button>
+                        <button class="odd" :disabled="!event.drawOdds" @click="event.drawOdds && openModal(event.id)">{{ event.drawOdds || '-' }}</button>
+                        <button class="odd" @click="openModal(event.id)">{{ event.odds2 }}</button>
+                    </div>
+                    
+                    
+                    
+                </div>
+            </div>
+        </TransitionGroup>
+        
+    </div>
+    <EventModal v-if="showModal" v-model="showModal" :match-id="selectedMatchId"/>
+</template>
+
+<style lang="css" scoped>
+    .match-section {
+        margin: 24px 0;
+        padding: 0 12px;
     }
-    .teams{
+
+    .section-header {
         display: flex;
-        gap: 18px;
-        justify-content: center;
-        font-size: 20px;
+        align-items: center;
+        gap: 8px;
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--main-font-color);
+        margin-bottom: 16px;
+        padding-left: 8px;
+        border-bottom: var(--main-border);
+        letter-spacing: -0.3px;
+        justify-content: space-between;
     }
-    .footerInfo{
+    .section-header:hover{
+        background: var(--elem-back-color);
+        border-radius: 8px;
+        color: var(--accent-font-color);
+        border: var(--hover-border);
+    }
+
+    .section-header .hover-show{
+        display: none;
+    } 
+    .section-header:hover .hover-show{
+        display: inline;
+        cursor: pointer;
+        margin-right: 16px;
+        font-size: 14px;
+        color: var(--elem-hover-font-color);
+    }
+
+    .live-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--accent-font-color);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+
+    .match-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 12px;
+    }
+    .slide-enter-active,
+    .slide-leave-active {
+    transition: all 0.2s ease-in;
+    overflow: hidden;
+    }
+
+    .slide-enter-from,
+    .slide-leave-to {
+    opacity: 0;
+    max-height: 0;
+    
+    }
+
+    .slide-enter-to,
+    .slide-leave-from {
+    opacity: 1;
+    max-height: 250px;
+    }
+
+    .match-card {
+        width: 300px;
         display: flex;
-        justify-content: space-around;
+        justify-content: space-between;
+        flex-direction: column;
+        gap: 12px;
     }
 
+    .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
+    .card-top-info{
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--secondary-font-color);
+        letter-spacing: 0.5px;
+    }
 
+    .matchup {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .team {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--main-font-color);
+        flex: 1;
+        text-align: center;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .score {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--accent-font-color);
+        min-width: 64px;
+        text-align: center;
+        letter-spacing: 2px;
+        /* animation: pulse 3s infinite; */
+    }
+
+    .odds {
+        display: flex;
+        gap: 6px;
+    }
+
+    .odd {
+        flex: 1;
+        padding: 8px 6px;
+    }
+
+    @media (max-width: 768px) {
+        .match-card {
+            width: 100%;
+            max-width: 350px;
+        }
+        
+        .section-header {
+            font-size: 20px;
+        }
+    }
 </style>
