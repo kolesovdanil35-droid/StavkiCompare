@@ -79,7 +79,7 @@ input, select, textarea {
   background: var(--card-back-color);
   border: var(--main-border);
   border-radius: 8px;
-  padding: 14px 16px;
+  padding: 20px;
   transition: all 0.2s ease;
 }
 .card:hover {
@@ -92,7 +92,7 @@ button{
   border: var(--main-border);
   width: fit-content;
   color: var(--main-font-color);
-  padding: 14px;
+  padding: 10px 14px;
   border-radius: 8px;
   font-size: 14px;
   display: flex;

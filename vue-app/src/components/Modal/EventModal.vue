@@ -1,23 +1,29 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import axios from 'axios'
+import Analizer from '../../views/Analizer.vue';
+import { savedMatchesStore } from '../../stores/savedMatches'
 
 const API_BASE = import.meta.env.VITE_API_BASE || ''
 const showModal = defineModel<boolean>()
 const props = defineProps<{
   matchId: number | null
 }>()
+
 const bookmakers = ref<any[]>([])
 const analysisData = ref<any>(null)
 const activeTab = ref('odds')
 const isLoading = ref(false)
 const isAnalysisLoading = ref(false)
+const isSaved = ref(false)
+const isAuth = ref(!!localStorage.getItem('token'))
 
 watch(showModal, async (newVal) => {
   if (newVal) {
     bookmakers.value = []
     analysisData.value = null
-    if (!isLoading.value && props.matchId) {
+    isSaved.value = false
+    if (props.matchId) {
       isLoading.value = true
       isAnalysisLoading.value = true
       try {
@@ -27,6 +33,7 @@ watch(showModal, async (newVal) => {
         ])
         bookmakers.value = bookRes.data
         analysisData.value = analysisRes.data
+        checkSaved()
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -36,6 +43,19 @@ watch(showModal, async (newVal) => {
     }
   }
 }, { immediate: true })
+
+const toggleSave = async () => {
+  if (!isAuth.value || !props.matchId) return
+  isSaved.value = await savedMatchesStore.toggle(props.matchId)
+}
+
+const checkSaved = async () => {
+  if (!isAuth.value || !props.matchId) return
+  if (!savedMatchesStore.state.loaded) {
+    await savedMatchesStore.fetch()
+  }
+  isSaved.value = savedMatchesStore.state.matches.some(m => m.id === props.matchId)
+}
 
 const getFormClass = (result: string) => {
   return result
@@ -54,7 +74,14 @@ const getFormClass = (result: string) => {
               <span class="time-separator">|</span>
               <span class="time">{{ analysisData?.time }}</span>
             </div>
-            <button class="close-btn" @click="showModal=false" >✕</button>
+            <div class="header-actions">
+              <button v-if="isAuth" class="save-btn" :class="{ saved: isSaved }" @click="toggleSave" :title="isSaved ? 'Убрать из сохраненных' : 'Сохранить матч'">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                </svg>
+              </button>
+              <button class="close-btn" @click="showModal=false">✕</button>
+            </div>
           </div>
           <div class="teams">
             <div class="team-info">
@@ -173,7 +200,7 @@ const getFormClass = (result: string) => {
                 </div>
               </div>
 
-              <div class="analysis-card prediction-card">
+              <!-- <div class="analysis-card prediction-card">
                 <h3 class="analysis-title">Прогноз</h3>
                 <div class="prediction-content">
                   <div class="prediction-winner">
@@ -200,7 +227,7 @@ const getFormClass = (result: string) => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </div> -->
             </div>
             <div v-else class="loading-state">Анализ недоступен</div>
           </div>
@@ -211,7 +238,7 @@ const getFormClass = (result: string) => {
           <div class="update-time">
              Коэффициенты обновлены: только что
           </div>
-          <button class="full-analysis-btn">
+          <button  @click="$router.push({ path: 'analis', query: { id : props.matchId } })">
             Полный анализ матча →
           </button>
         </div>
@@ -295,6 +322,12 @@ const getFormClass = (result: string) => {
   color: var(--accent-font-color);
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .close-btn {
   background: var(--elem-back-color);
   border: var(--main-border);
@@ -311,6 +344,32 @@ const getFormClass = (result: string) => {
   transform: rotate(90deg);
 }
 
+.save-btn {
+  background: transparent;
+  border: var(--main-border);
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--secondary-font-color);
+  transition: all 0.2s;
+}
+
+.save-btn:hover {
+  color: var(--accent-font-color);
+  border-color: var(--accent-font-color);
+  background: rgba(0, 255, 36, 0.05);
+}
+
+.save-btn.saved {
+  color: var(--accent-font-color);
+  border-color: var(--accent-font-color);
+  background: rgba(0, 255, 36, 0.1);
+}
+
 .teams {
   display: flex;
   justify-content: space-between;
@@ -324,7 +383,7 @@ const getFormClass = (result: string) => {
 }
 
 .team-name {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   background: var(--accent-font-color);
   background-clip: text;
@@ -421,6 +480,7 @@ const getFormClass = (result: string) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
 }
 
 .bookmaker-info {
@@ -435,7 +495,8 @@ const getFormClass = (result: string) => {
 
 .bookmaker-name {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
+  flex-shrink: 0;
 }
 
 .outcome-badge {
@@ -444,12 +505,42 @@ const getFormClass = (result: string) => {
   border-radius: 6px;
   color: var(--accent-font-color);
   text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .odd-value {
   font-weight: 800;
+  font-size: 20px;
   color: var(--accent-font-color);
   line-height: 1;
+  min-width: 48px;
+  text-align: center;
+}
+
+.bet-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  background: var(--elem-back-color);
+  border: var(--main-border);
+  border-radius: 8px;
+  color: var(--main-font-color);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.bet-btn:hover {
+  background: var(--elem-back-hover-color);
+  color: #a8ffb4;
+  border-color: #20fa3d40;
+  transform: translateY(-0.5px);
 }
 
 .odd-label {

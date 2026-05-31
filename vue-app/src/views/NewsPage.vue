@@ -2,24 +2,30 @@
   <div class="news-page">
 
     <div class="content-grid">
-      <!-- Основные статьи -->
       <div class="articles-section">
         <h2 class="section-title">Последние аналитические статьи</h2>
-        <div class="articles-list">
+        <div v-if="isLoading" class="skeleton-list">
+          <div class="skeleton-article" v-for="i in 3" :key="i">
+            <div class="skeleton-block" style="width:80px;height:20px"></div>
+            <div class="skeleton-block" style="width:100%;height:24px;margin-top:12px"></div>
+            <div class="skeleton-block" style="width:80%;height:16px;margin-top:8px"></div>
+            <div class="skeleton-block" style="width:60%;height:16px;margin-top:6px"></div>
+          </div>
+        </div>
+        <div v-else class="articles-list">
           <article class="article-card" v-for="article in articles" :key="article.id">
             <div class="article-header">
               <span class="article-category" :style="{ backgroundColor: getCategoryColor(article.category) }">
                 {{ article.category }}
               </span>
-              <span class="article-date">{{ formatDate(article.date) }}</span>
+              <span class="article-date">{{ formatDate(article.published_at) }}</span>
             </div>
             <h3 class="article-title">{{ article.title }}</h3>
             <p class="article-excerpt">{{ article.excerpt }}</p>
             <div class="article-footer">
               <div class="author">
-                
-                <span class="author-name">{{ article.author.name }}</span>
-                <span class="author-role">{{ article.author.role }}</span>
+                <span class="author-name">{{ article.author_name }}</span>
+                <span class="author-role">{{ article.author_role }}</span>
               </div>
               <button class="read-more-btn" @click="openArticle(article.id)">
                 Читать далее
@@ -28,42 +34,21 @@
             </div>
           </article>
         </div>
-
       </div>
 
       <!-- Боковая панель с подкастом -->
       <aside class="sidebar">
         <h2 class="section-title">Подкасты</h2>
         <div class="article-card">
-          <div class="podcast-header">
-            <h3>Подкаст "Ставки на Спорт"</h3>
-            <span class="podcast-badge">НОВЫЙ</span>
-          </div>
-          
-          <div class="podcast-info">
-            <div class="podcast-cover">
-              <span class="play-icon">▶</span>
-            </div>
-            <div class="podcast-details">
-              <h4>Эпизод #24: Анализ Чемпионата Европы по футболу</h4>
-              <p class="podcast-description">
-                Глубокий разбор тактики ведущих сборных, анализ формы игроков и прогнозы на матчи группового этапа.
-              </p>
-              <div class="podcast-meta">
-                <span class="duration">⏱️ 48 мин</span>
-                <span class="date">📅 15 янв 2024</span>
-              </div>
-            </div>
-          </div>
 
           <div class="podcast-episodes">
-            <h5>Последние эпизоды:</h5>
+            
             <div class="episode" v-for="episode in episodes" :key="episode.id">
               <div class="episode-info">
                 <span class="episode-title">{{ episode.title }}</span>
-                <span class="episode-date">{{ episode.date }}</span>
+                <span class="episode-date">{{ formatPodcastDate(episode.published_at) }}</span>
               </div>
-              <button class="play-btn">▶</button>
+              <button class="play-btn" @click="playEpisode(episode, episodes)"><span>▶</span></button>
             </div>
           </div>
 
@@ -82,95 +67,66 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+import { usePodcastPlayer } from '../stores/podcastPlayer'
+
+const router = useRouter()
+const { playEpisode } = usePodcastPlayer()
+const API_BASE = import.meta.env.VITE_API_BASE || ''
 
 interface Article {
   id: number
   title: string
   excerpt: string
   category: string
-  date: string
-  author: {
-    name: string
-    role: string
-    avatar: string
-  }
+  published_at: string
+  author_name: string
+  author_role: string
+  author_avatar: string
 }
 
 interface PodcastEpisode {
   id: number
   title: string
-  date: string
+  description: string
+  duration_seconds: number
+  episode_number: number
+  published_at: string
 }
 
-interface Expert {
-  id: number
-  name: string
-  accuracy: number
-  profit: number
-  avatar: string
-}
+const articles = ref<Article[]>([])
+const episodes = ref<PodcastEpisode[]>([])
+const isLoading = ref(true)
 
-const articles = ref<Article[]>([
-  {
-    id: 1,
-    title: 'Тактический разбор: почему Барселона проигрывает в гостях',
-    excerpt: 'Анализ последних матчей каталонского клуба, проблемы в обороне и статистика выездных игр в этом сезоне.',
-    category: 'Футбол',
-    date: '2024-01-15',
-    author: {
-      name: 'Алексей Петров',
-      role: 'Главный аналитик',
-      avatar: '👨‍💼'
-    }
-  },
-  {
-    id: 2,
-    title: 'NBA: Статистические аномалии января 2024',
-    excerpt: 'Неожиданные результаты, переоцененные фавориты и темные лошадки второй половины сезона.',
-    category: 'Баскетбол',
-    date: '2024-01-14',
-    author: {
-      name: 'Мария Иванова',
-      role: 'Спортивный аналитик',
-      avatar: '👩‍💼'
-    }
-  },
-  {
-    id: 3,
-    title: 'Киберспорт: мета-анализ CS2 после последнего обновления',
-    excerpt: 'Как изменилась статистика команд, новые тактики и влияние патча на профессиональную сцену.',
-    category: 'Киберспорт',
-    date: '2024-01-13',
-    author: {
-      name: 'Дмитрий Смирнов',
-      role: 'Эксперт по киберспорту',
-      avatar: '🎮'
-    }
+onMounted(async () => {
+  try {
+    const [articlesRes, podcastsRes] = await Promise.all([
+      axios.get(`${API_BASE}/api/articles`),
+      axios.get(`${API_BASE}/api/podcasts`)
+    ])
+    articles.value = articlesRes.data
+    episodes.value = podcastsRes.data
+  } catch (err) {
+    console.error('Error fetching data:', err)
+  } finally {
+    isLoading.value = false
   }
-])
-
-const episodes = ref<PodcastEpisode[]>([
-  { id: 1, title: 'Зимние трансферы в футболе', date: '12 янв' },
-  { id: 2, title: 'Анализ Australian Open', date: '10 янв' },
-  { id: 3, title: 'Новости NBA All-Star', date: '8 янв' }
-])
-
-const topExperts = ref<Expert[]>([
-  { id: 1, name: 'Иван Ковалев', accuracy: 87, profit: 24.5, avatar: '👨‍🎓' },
-  { id: 2, name: 'Елена Соколова', accuracy: 82, profit: 18.3, avatar: '👩‍🎓' },
-  { id: 3, name: 'Сергей Новиков', accuracy: 79, profit: 15.7, avatar: '🧑‍💻' }
-])
-
-const loading = ref(false)
+})
 
 const formatDate = (dateString: string): string => {
-  const options: Intl.DateTimeFormatOptions = { 
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  }
-  return new Date(dateString).toLocaleDateString('ru-RU', options)
+  const d = new Date(dateString)
+  return d.toLocaleDateString('ru-RU', {
+    day: 'numeric', month: 'short', year: 'numeric'
+  })
+}
+
+const formatPodcastDate = (dateString: string): string => {
+  const d = new Date(dateString)
+  return d.toLocaleDateString('ru-RU', {
+    day: 'numeric', month: 'short'
+  })
 }
 
 const getCategoryColor = (category: string): string => {
@@ -185,14 +141,7 @@ const getCategoryColor = (category: string): string => {
 }
 
 const openArticle = (id: number) => {
-  console.log('Opening article:', id)
-}
-
-const showMoreArticles = () => {
-  loading.value = true
-  setTimeout(() => {
-    loading.value = false
-  }, 1000)
+  router.push(`/news/${id}`)
 }
 </script>
 
@@ -514,8 +463,9 @@ const showMoreArticles = () => {
 
 .subscribe-buttons {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  gap: 12px;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 
 .platform-btn {
@@ -602,6 +552,31 @@ const showMoreArticles = () => {
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
+}
+
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.skeleton-article {
+  background: var(--card-back-color);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: var(--main-border);
+}
+
+.skeleton-block {
+  background: linear-gradient(90deg, var(--elem-back-color) 25%, var(--elem-back-hover-color) 50%, var(--elem-back-color) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 @media (max-width: 768px) {

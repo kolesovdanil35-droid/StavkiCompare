@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import EventPlace from '../components/EventPlace/EventPlace.vue'
+import SkeletonCard from '../components/UI/SkeletonCard.vue'
 import axios from 'axios'
+import { savedMatchesStore } from '../stores/savedMatches'
 
 const liveMatches = ref([])
 const upcomingMatches = ref([])
-const savedMatches = ref([])
+const isLoading = ref(true)
 
 const API_BASE = import.meta.env.VITE_API_BASE || ''
 
@@ -18,38 +20,38 @@ onMounted(async () => {
     
     liveMatches.value = liveRes.data
     upcomingMatches.value = upcomingRes.data
-    
-    // Create saved matches: first from live, first from upcoming
-    if (liveMatches.value.length > 0) {
-      savedMatches.value.push(liveMatches.value[0])
-    }
-    if (upcomingMatches.value.length > 0) {
-      savedMatches.value.push(upcomingMatches.value[0])
-    }
-    // Add one more from either if available
-    if (liveMatches.value.length > 1) {
-      savedMatches.value.push(liveMatches.value[1])
-    } else if (upcomingMatches.value.length > 1) {
-      savedMatches.value.push(upcomingMatches.value[1])
-    }
+
+    savedMatchesStore.fetch()
   } catch (error) {
     console.error('Error fetching matches:', error)
-    // Fallback to empty arrays
     liveMatches.value = []
     upcomingMatches.value = []
-    savedMatches.value = []
+  } finally {
+    isLoading.value = false
   }
 })
 </script>
 
 <template>
   <div class="main-page">
-    <EventPlace innerMathes="Live" :dataSourse="liveMatches"/>
-    <EventPlace innerMathes="Incoming" :dataSourse="upcomingMatches"/>
-    <div class="saved-matches-section">
-      <h2 class="section-title">Мои сохраненные матчи</h2>
-      <EventPlace innerMathes="Сохраненные" :dataSourse="savedMatches"/>
+    <div class="skeleton-section" v-if="isLoading">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-grid">
+        <SkeletonCard v-for="i in 4" :key="i" />
+      </div>
+      <div class="skeleton-header" style="margin-top: 24px;"></div>
+      <div class="skeleton-grid">
+        <SkeletonCard v-for="i in 3" :key="'u'+i" />
+      </div>
     </div>
+    <template v-else>
+      <EventPlace innerMathes="Live" :dataSourse="liveMatches"/>
+      <EventPlace innerMathes="Incoming" :dataSourse="upcomingMatches"/>
+      <div v-if="savedMatchesStore.state.matches.length" class="saved-matches-section">
+        <h2 class="section-title">Мои сохраненные матчи</h2>
+        <EventPlace innerMathes="Сохраненные" :dataSourse="savedMatchesStore.state.matches"/>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -72,5 +74,33 @@ onMounted(async () => {
   border-radius: 12px;
   padding: 1.5rem;
   margin-top: 2rem;
+}
+
+/* Skeleton styles */
+.skeleton-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton-header {
+  width: 200px;
+  height: 32px;
+  background: linear-gradient(90deg, var(--elem-back-color) 25%, var(--elem-back-hover-color) 50%, var(--elem-back-color) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 </style>

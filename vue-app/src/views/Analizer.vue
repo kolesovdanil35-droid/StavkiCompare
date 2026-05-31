@@ -13,7 +13,7 @@
             v-for="match in matches"
             :key="match.id"
             :class="['match-item', { active: selectedMatch?.id === match.id }]"
-            @click="selectMatch(match)"
+            @click="selectMatch(match.id)"
           >
             <div class="match-top">
               <span class="match-league">{{ match.league }}</span>
@@ -187,23 +187,33 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import type { AnalysisData } from '../data/Analysis/IAnalysis'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 const API_BASE = import.meta.env.VITE_API_BASE || ''
 const matches = ref<AnalysisData[]>([])
 const selectedMatch = ref<AnalysisData | null>(null)
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`${API_BASE}/api/analysis/matches`)
+    const res = await axios.get(`${API_BASE}/api/matches`)
     matches.value = res.data
   } catch (error) {
     console.error('Error fetching analysis matches:', error)
     matches.value = []
+  }finally{
+    selectMatch(Number(route.query.id))
   }
 })
 
-const selectMatch = (match: AnalysisData) => {
-  selectedMatch.value = match
+const selectMatch = async (id: number) => {
+  try{
+    const res = await axios.get(`${API_BASE}/api/matches/${id}/analysis`)
+    selectedMatch.value = res.data
+  }catch(error){
+    console.error('Error fetching analysis matches:', error)
+    selectedMatch.value = null
+  }
 }
 
 const getWinnerName = () => {
