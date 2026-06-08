@@ -5,17 +5,20 @@
     import Filters from './Filters.vue'
     import EventModal from '../Modal/EventModal.vue'
     
-    const showMathes = ref(false)
+    const showMathes = ref(true)
     const sportSet = ref<Set<string>>(new Set())
     const showModal = ref<boolean>(false)
     const selectedMatchId = ref<number | null>(null)
-    const openModal = (eventId: number) => {
+    const selectedOutcome = ref<string | null>(null)
+    const openModal = (eventId: number, outcome?: string) => {
         selectedMatchId.value = eventId
+        selectedOutcome.value = outcome || null
         showModal.value = true
     }
     const closeModal = () => {
         showModal.value = false
         selectedMatchId.value = null
+        selectedOutcome.value = null
     }
     const props = defineProps<{
         innerMathes: string
@@ -47,35 +50,35 @@
         
         
         <TransitionGroup name="slide">
-            <Filters v-if="showMathes" :dataSourse="props.dataSourse" @filter-changed="filterSports"></Filters>
+            <Filters v-if="showMathes && filteredDataSourse.length > 0" :dataSourse="props.dataSourse" @filter-changed="filterSports"></Filters>
             <div class="match-grid" v-if="showMathes">
                 
-                <div class="card match-card" v-for="event in filteredDataSourse" :key="event.id">
-                    <div class="card-top">
-                        <span class="card-top-info">{{ event.sport }}</span>
-                        <span class="card-top-info">{{ event.time }}</span>
+                    <div class="card match-card" v-for="event in filteredDataSourse" :key="event.id">
+                        <div class="card-top">
+                            <span class="card-top-info">{{ event.sport }}</span>
+                            <span class="card-top-info">{{ event.time }}</span>
+                        </div>
+                
+                        <div class="matchup">
+                            <span class="team">{{ event.team1 }}</span>
+                            <span class="score">{{ event.score ? event.score : 'VS' }}</span>
+                            <span class="team">{{ event.team2 }}</span>
+                        </div>
+                
+                        <div class="odds">
+                            <button class="odd" @click="openModal(event.id, 'П1')">{{ event.odds1 }}</button>
+                            <button class="odd" :disabled="!event.drawOdds" @click="event.drawOdds && openModal(event.id, 'X')">{{ event.drawOdds || '-' }}</button>
+                            <button class="odd" @click="openModal(event.id, 'П2')">{{ event.odds2 }}</button>
+                        </div>
+                        
+                        
+                        
                     </div>
-            
-                    <div class="matchup">
-                        <span class="team">{{ event.team1 }}</span>
-                        <span class="score">{{ event.score ? event.score : 'VS' }}</span>
-                        <span class="team">{{ event.team2 }}</span>
-                    </div>
-            
-                    <div class="odds">
-                        <button class="odd" @click="openModal(event.id)">{{ event.odds1 }}</button>
-                        <button class="odd" :disabled="!event.drawOdds" @click="event.drawOdds && openModal(event.id)">{{ event.drawOdds || '-' }}</button>
-                        <button class="odd" @click="openModal(event.id)">{{ event.odds2 }}</button>
-                    </div>
-                    
-                    
-                    
-                </div>
             </div>
         </TransitionGroup>
         
     </div>
-    <EventModal v-if="showModal" v-model="showModal" :match-id="selectedMatchId"/>
+    <EventModal v-if="showModal" v-model="showModal" :match-id="selectedMatchId" :initial-outcome="selectedOutcome"/>
 </template>
 
 <style lang="css" scoped>
@@ -130,7 +133,7 @@
 
     .match-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 12px;
     }
     .slide-enter-active,
@@ -181,23 +184,22 @@
     }
 
     .team {
-        font-size: 16px;
-        font-weight: 500;
+        font-size: 15px;
+        font-weight: 600;
         color: var(--main-font-color);
         flex: 1;
         text-align: center;
-        line-height: 1.2;
+        line-height: 1.3;
         word-break: break-word;
     }
 
     .score {
-        font-size: 22px;
+        font-size: 20px;
         font-weight: 700;
         color: var(--accent-font-color);
         min-width: 64px;
         text-align: center;
         letter-spacing: 2px;
-        /* animation: pulse 3s infinite; */
     }
 
     .odds {
@@ -207,7 +209,14 @@
 
     .odd {
         flex: 1;
-        padding: 8px 6px;
+        padding: 10px 8px;
+        font-weight: 700;
+    }
+
+    .odd-saved {
+        border-color: var(--accent-font-color);
+        color: var(--accent-font-color);
+        background: rgba(0, 255, 36, 0.05);
     }
 
     @media (max-width: 768px) {

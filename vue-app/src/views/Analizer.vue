@@ -64,13 +64,13 @@
                 <span class="winner-label">Победит:</span>
                 <span class="winner-name">{{ getWinnerName() }}</span>
               </div>
-              <div class="prediction-score">Счёт: {{ selectedMatch.prediction.predictedScore }}</div>
+              <div class="prediction-score">Счёт: {{ selectedMatch.prediction?.predictedScore }}</div>
               <div class="prediction-confidence">
                 <div class="confidence-label">Уверенность</div>
                 <div class="confidence-bar">
-                  <div class="confidence-fill" :style="{ width: selectedMatch.prediction.confidence + '%' }"></div>
+                  <div class="confidence-fill" :style="{ width: (selectedMatch.prediction?.confidence || 0) + '%' }"></div>
                 </div>
-                <div class="confidence-value">{{ selectedMatch.prediction.confidence }}%</div>
+                <div class="confidence-value">{{ selectedMatch.prediction?.confidence }}%</div>
               </div>
             </div>
           </div>
@@ -98,24 +98,24 @@
               <h3 class="card-title">Сравнение статистики</h3>
               <div class="stats-comparison">
                 <div class="stat-row">
-                  <span class="stat-value stat-left">{{ selectedMatch.team1Stats.position }}</span>
+                  <span class="stat-value stat-left">{{ selectedMatch.team1Stats?.position }}</span>
                   <span class="stat-name">Позиция</span>
-                  <span class="stat-value stat-right">{{ selectedMatch.team2Stats.position }}</span>
+                  <span class="stat-value stat-right">{{ selectedMatch.team2Stats?.position }}</span>
                 </div>
                 <div class="stat-row">
-                  <span class="stat-value stat-left">{{ selectedMatch.team1Stats.goalsScored }}</span>
+                  <span class="stat-value stat-left">{{ selectedMatch.team1Stats?.goalsScored }}</span>
                   <span class="stat-name">Голы</span>
-                  <span class="stat-value stat-right">{{ selectedMatch.team2Stats.goalsScored }}</span>
+                  <span class="stat-value stat-right">{{ selectedMatch.team2Stats?.goalsScored }}</span>
                 </div>
                 <div class="stat-row">
-                  <span class="stat-value stat-left">{{ selectedMatch.team1Stats.goalsConceded }}</span>
+                  <span class="stat-value stat-left">{{ selectedMatch.team1Stats?.goalsConceded }}</span>
                   <span class="stat-name">Пропущено</span>
-                  <span class="stat-value stat-right">{{ selectedMatch.team2Stats.goalsConceded }}</span>
+                  <span class="stat-value stat-right">{{ selectedMatch.team2Stats?.goalsConceded }}</span>
                 </div>
                 <div class="stat-row">
-                  <span class="stat-value stat-left">{{ selectedMatch.team1Stats.wins }}</span>
+                  <span class="stat-value stat-left">{{ selectedMatch.team1Stats?.wins }}</span>
                   <span class="stat-name">Победы</span>
-                  <span class="stat-value stat-right">{{ selectedMatch.team2Stats.wins }}</span>
+                  <span class="stat-value stat-right">{{ selectedMatch.team2Stats?.wins }}</span>
                 </div>
               </div>
             </div>
@@ -126,21 +126,21 @@
                 <div class="h2h-record">
                   <div class="h2h-team">
                     <span>{{ selectedMatch.team1 }}</span>
-                    <span class="h2h-wins">{{ selectedMatch.h2h.team1Wins }}</span>
+                    <span class="h2h-wins">{{ selectedMatch.h2h?.team1Wins }}</span>
                   </div>
                   <div class="h2h-draws">
                     <span class="draws-label">Ничьи</span>
-                    <span class="draws-count">{{ selectedMatch.h2h.draws }}</span>
+                    <span class="draws-count">{{ selectedMatch.h2h?.draws }}</span>
                   </div>
                   <div class="h2h-team">
                     <span>{{ selectedMatch.team2 }}</span>
-                    <span class="h2h-wins">{{ selectedMatch.h2h.team2Wins }}</span>
+                    <span class="h2h-wins">{{ selectedMatch.h2h?.team2Wins }}</span>
                   </div>
                 </div>
                 <div class="h2h-last">
                   <span class="h2h-last-label">Последние:</span>
                   <div class="h2h-scores">
-                    <span v-for="(score, i) in selectedMatch.h2h.lastMatches" :key="i" class="h2h-score">{{ score }}</span>
+                    <span v-for="(score, i) in selectedMatch.h2h?.lastMatches" :key="i" class="h2h-score">{{ score }}</span>
                   </div>
                 </div>
               </div>
@@ -149,7 +149,7 @@
             <div class="analysis-card reasoning-card">
               <h3 class="card-title">Почему такой прогноз?</h3>
               <ul class="reasoning-list">
-                <li v-for="(reason, i) in selectedMatch.prediction.reasoning" :key="i">
+                <li v-for="(reason, i) in selectedMatch.prediction?.reasoning" :key="i">
                   <span class="reasoning-number">{{ i + 1 }}</span>
                   <span class="reasoning-text">{{ reason }}</span>
                 </li>
@@ -168,11 +168,11 @@
               <div class="streak-display">
                 <div class="streak-item">
                   <span class="streak-team">{{ selectedMatch.team1 }}</span>
-                  <span class="streak-text">{{ selectedMatch.team1Stats.streak }}</span>
+                  <span class="streak-text">{{ selectedMatch.team1Stats?.streak }}</span>
                 </div>
                 <div class="streak-item">
                   <span class="streak-team">{{ selectedMatch.team2 }}</span>
-                  <span class="streak-text">{{ selectedMatch.team2Stats.streak }}</span>
+                  <span class="streak-text">{{ selectedMatch.team2Stats?.streak }}</span>
                 </div>
               </div>
             </div>
@@ -217,7 +217,7 @@ const selectMatch = async (id: number) => {
 }
 
 const getWinnerName = () => {
-  if (!selectedMatch.value) return ''
+  if (!selectedMatch.value?.prediction) return '—'
   const { prediction, team1, team2 } = selectedMatch.value
   if (prediction.winner === 'team1') return team1
   if (prediction.winner === 'team2') return team2

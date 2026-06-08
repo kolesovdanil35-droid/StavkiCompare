@@ -1,16 +1,46 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import Analizer from '../../views/Analizer.vue';
 import { savedMatchesStore } from '../../stores/savedMatches'
+import { toastStore } from '../../stores/toast'
 
 const API_BASE = import.meta.env.VITE_API_BASE || ''
+const router = useRouter()
 const showModal = defineModel<boolean>()
 const props = defineProps<{
   matchId: number | null
+  initialOutcome?: string | null
 }>()
 
 const bookmakers = ref<any[]>([])
+
+interface BookmakerRow {
+  id: number
+  name: string
+  sourceUrl: string
+  odds: Record<string, string>
+}
+const groupedBookmakers = computed<BookmakerRow[]>(() => {
+  const map = new Map<number, BookmakerRow>()
+  for (const b of bookmakers.value) {
+    if (!map.has(b.id)) {
+      map.set(b.id, { id: b.id, name: b.name, sourceUrl: b.source_url, odds: {} })
+    }
+    map.get(b.id)!.odds[b.outcome] = b.odd
+  }
+  const rows = Array.from(map.values())
+  const sortBy = props.initialOutcome
+  if (sortBy && rows.some(r => r.odds[sortBy])) {
+    rows.sort((a, b) => {
+      const va = parseFloat(a.odds[sortBy]) || 0
+      const vb = parseFloat(b.odds[sortBy]) || 0
+      return vb - va
+    })
+  }
+  return rows
+})
 const analysisData = ref<any>(null)
 const activeTab = ref('odds')
 const isLoading = ref(false)
@@ -46,7 +76,9 @@ watch(showModal, async (newVal) => {
 
 const toggleSave = async () => {
   if (!isAuth.value || !props.matchId) return
-  isSaved.value = await savedMatchesStore.toggle(props.matchId)
+  const saved = await savedMatchesStore.toggle(props.matchId)
+  isSaved.value = saved
+  toastStore.add(saved ? 'Матч сохранён' : 'Матч удалён из сохранённых', 'success')
 }
 
 const checkSaved = async () => {
@@ -59,6 +91,11 @@ const checkSaved = async () => {
 
 const getFormClass = (result: string) => {
   return result
+}
+
+const goToLogin = () => {
+  showModal.value = false
+  router.push('/login')
 }
 </script>
 
@@ -75,12 +112,18 @@ const getFormClass = (result: string) => {
               <span class="time">{{ analysisData?.time }}</span>
             </div>
             <div class="header-actions">
-              <button v-if="isAuth" class="save-btn" :class="{ saved: isSaved }" @click="toggleSave" :title="isSaved ? 'Убрать из сохраненных' : 'Сохранить матч'">
+              <button v-if="isAuth" class="save-btn" :class="{ saved: isSaved }" @click="toggleSave" :title="isSaved ? 'Убрать из сохраненных' : 'Сохранить матч'" :aria-label="isSaved ? 'Убрать из сохраненных' : 'Сохранить матч'">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                 </svg>
               </button>
-              <button class="close-btn" @click="showModal=false">✕</button>
+              <button v-else class="login-prompt-btn" @click="goToLogin" title="Войдите, чтобы сохранять матчи">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span class="login-prompt-text">войдите</span>
+              </button>
+              <button class="close-btn" @click="showModal=false" aria-label="Закрыть">✕</button>
             </div>
           </div>
           <div class="teams">
@@ -119,16 +162,31 @@ const getFormClass = (result: string) => {
         <!-- Контент вкладок -->
         <div class="tab-content">
           <!-- Вкладка с коэффициентами -->
-          <div v-show="activeTab === 'odds'" class="odds-cards">
+          <div v-show="activeTab === 'odds'" class="odds-container">
             <div v-if="isLoading" class="loading-state">Загрузка...</div>
-            <div v-for="bookmaker in bookmakers" :key="bookmaker.id" class="card bookmaker-card">
-              <div class="bookmaker-header">
-                <span class="bookmaker-name">{{ bookmaker.name }}</span>
-                <span class="outcome-badge">{{ bookmaker.outcome }}</span>
-                <span class="odd-value">{{ bookmaker.odd }}</span>
-                <a :href="bookmaker.sourceUrl" target="_blank" class="bet-btn">Сайт</a>
+            <div v-else-if="groupedBookmakers.length" class="bookmaker-cards">
+              <div v-for="row in groupedBookmakers" :key="row.id" class="bookmaker-card">
+                <div class="bookmaker-top">
+                  <span class="bookmaker-name">{{ row.name }}</span>
+                  <a :href="row.sourceUrl" target="_blank" class="site-link">Сайт</a>
+                </div>
+                <div class="bookmaker-odds">
+                  <div class="bk-odd-col">
+                    <span class="bk-odd-label">П1</span>
+                    <button class="bk-odd-btn" :class="{ highlighted: initialOutcome === 'П1' }">{{ row.odds['П1'] || '-' }}</button>
+                  </div>
+                  <div class="bk-odd-col">
+                    <span class="bk-odd-label">X</span>
+                    <button class="bk-odd-btn" :class="{ highlighted: initialOutcome === 'X' }">{{ row.odds['X'] || '-' }}</button>
+                  </div>
+                  <div class="bk-odd-col">
+                    <span class="bk-odd-label">П2</span>
+                    <button class="bk-odd-btn" :class="{ highlighted: initialOutcome === 'П2' }">{{ row.odds['П2'] || '-' }}</button>
+                  </div>
+                </div>
               </div>
             </div>
+            <div v-else class="loading-state">Нет данных</div>
           </div>
 
           <!-- Вкладка с анализом -->
@@ -370,6 +428,31 @@ const getFormClass = (result: string) => {
   background: rgba(0, 255, 36, 0.1);
 }
 
+.login-prompt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: var(--main-border);
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: var(--secondary-font-color);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.login-prompt-btn:hover {
+  color: var(--accent-font-color);
+  border-color: var(--accent-font-color);
+  background: rgba(0, 255, 36, 0.05);
+}
+
+.login-prompt-text {
+  font-weight: 500;
+}
+
 .teams {
   display: flex;
   justify-content: space-between;
@@ -456,142 +539,105 @@ const getFormClass = (result: string) => {
   overflow-y: auto;
   min-height: 400px;
 }
-.odds-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-  padding: 20px;
+.odds-container {
+  padding: 20px 24px;
+  min-height: 400px;
 }
 
 .loading-state {
-  grid-column: 1 / -1;
   text-align: center;
   padding: 40px;
   color: var(--secondary-font-color);
   font-size: 14px;
 }
 
-.bookmaker-card {
-  background: var(--elem-back-color);
-  
+.bookmaker-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
 }
 
-.bookmaker-header {
+.bookmaker-card {
+  background: var(--elem-back-color);
+  border: var(--main-border);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.2s;
+}
+
+.bookmaker-card:hover {
+  border-color: var(--accent-font-color);
+  border-color: #00ff2440;
+}
+
+.bookmaker-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
-}
-
-.bookmaker-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.bookmaker-icon {
-  font-size: 24px;
 }
 
 .bookmaker-name {
   font-weight: 600;
   font-size: 15px;
-  flex-shrink: 0;
-}
-
-.outcome-badge {
-  background: rgba(0, 255, 36, 0.1);
-  padding: 4px 8px;
-  border-radius: 6px;
-  color: var(--accent-font-color);
-  text-transform: uppercase;
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.odd-value {
-  font-weight: 800;
-  font-size: 20px;
-  color: var(--accent-font-color);
-  line-height: 1;
-  min-width: 48px;
-  text-align: center;
-}
-
-.bet-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 12px;
-  background: var(--elem-back-color);
-  border: var(--main-border);
-  border-radius: 8px;
   color: var(--main-font-color);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
+}
+
+.site-link {
+  font-size: 12px;
+  color: var(--accent-font-color);
   text-decoration: none;
-  white-space: nowrap;
-}
-
-.bet-btn:hover {
-  background: var(--elem-back-hover-color);
-  color: #a8ffb4;
-  border-color: #20fa3d40;
-  transform: translateY(-0.5px);
-}
-
-.odd-label {
-  color: var(--secondary-font-color);
-  display: block;
-}
-
-/* Таблица коэффициентов */
-.odds-container {
-  padding: 20px 24px;
-  min-height: 400px;
-}
-
-.odds-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.odds-table th,
-.odds-table td {
-  text-align: left;
-  padding: 14px 12px;
-}
-
-.odds-table th {
-  background: var(--elem-back-color);
   font-weight: 600;
-  font-size: 13px;
+  padding: 4px 10px;
+  border: 1px solid var(--accent-font-color);
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.site-link:hover {
+  background: rgba(0, 255, 36, 0.1);
+}
+
+.bookmaker-odds {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.bk-odd-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.bk-odd-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--secondary-font-color);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--secondary-font-color);
-  border-bottom: var(--main-border);
 }
 
-.odds-table tr {
-  border-bottom: var(--main-border);
-  transition: background 0.2s;
+.bk-odd-btn {
+  width: 100%;
+  font-size: 14px;
+  color: var(--main-font-color);
+  background: var(--card-back-color);
+  border: var(--main-border);
+  border-radius: 6px;
+  padding: 10px 4px;
+  transition: all 0.2s;
+  cursor: default;
 }
 
-.odds-table tbody tr:hover {
-  background: rgba(0, 255, 36, 0.05);
-}
-
-.col-bookmaker {
-  font-weight: 500;
-}
-
-.odds-value {
-  font-weight: 700;
+.bk-odd-btn.highlighted {
+  background: rgba(0, 255, 36, 0.1);
+  border-color: #00ff2440;
   color: var(--accent-font-color);
-  font-size: 16px;
 }
 
 /* Анализ матча */
@@ -899,6 +945,22 @@ const getFormClass = (result: string) => {
 
 /* Адаптив */
 @media (max-width: 768px) {
+  .modalDialog {
+    width: 100%;
+    max-height: 100vh;
+    margin: 0;
+  }
+
+  .modalBody {
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .backdrop {
+    padding: 0;
+    align-items: flex-end;
+  }
+
   .teams {
     flex-direction: column;
     gap: 15px;
@@ -922,15 +984,46 @@ const getFormClass = (result: string) => {
     gap: 12px;
   }
   
-  .odds-table th,
-  .odds-table td {
-    padding: 10px 8px;
-    font-size: 12px;
-  }
-  
   .tab-btn {
     padding: 10px 16px;
     font-size: 13px;
+  }
+
+  .odds-container {
+    padding: 16px;
+  }
+
+  .bookmaker-cards {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .modalHeader {
+    padding: 16px;
+  }
+
+  .match-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bookmaker-odds {
+    gap: 4px;
+  }
+
+  .bk-odd-btn {
+    font-size: 16px;
+    padding: 8px 2px;
+  }
+
+  .bk-odd-label {
+    font-size: 10px;
+  }
+
+  .bookmaker-card {
+    padding: 12px;
   }
 }
 

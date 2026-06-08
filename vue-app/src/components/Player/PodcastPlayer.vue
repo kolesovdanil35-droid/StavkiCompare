@@ -24,18 +24,18 @@ const {
           <span class="player-title">{{ currentEpisode.title }}</span>
         </div>
         <div class="player-controls">
-          <button class="ctrl-btn" :disabled="!hasPrev" @click="prev">⏮</button>
-          <button class="ctrl-btn play-btn" @click="togglePlay">
+          <button class="ctrl-btn" :disabled="!hasPrev" @click="prev" aria-label="Предыдущий эпизод">⏮</button>
+          <button class="ctrl-btn play-btn" @click="togglePlay" :aria-label="state.isPlaying ? 'Пауза' : 'Воспроизвести'">
             {{ state.isPlaying ? '⏸' : '▶' }}
           </button>
-          <button class="ctrl-btn" :disabled="!hasNext" @click="next">⏭</button>
+          <button class="ctrl-btn" :disabled="!hasNext" @click="next" aria-label="Следующий эпизод">⏭</button>
         </div>
         <div class="player-time">
           <span>{{ formatTime(state.currentTime) }}</span>
           <span class="time-sep">/</span>
           <span>{{ formatTime(state.duration) }}</span>
         </div>
-        <button class="close-btn" @click="close">✕</button>
+        <button class="close-btn" @click="close" aria-label="Закрыть плеер">✕</button>
       </div>
     </div>
   </Transition>

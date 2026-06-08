@@ -40,6 +40,7 @@
     </footer>
 
     <PodcastPlayer />
+    <ToastContainer />
   </div>
 </template>
 
@@ -48,6 +49,7 @@ import { RouterView } from 'vue-router'
 import Header from './components/Header/header.vue'
 import Herosection from './components/Header/Herosection.vue';
 import PodcastPlayer from './components/Player/PodcastPlayer.vue';
+import ToastContainer from './components/UI/ToastContainer.vue';
 import { useHead } from '@vueuse/head';
 
 useHead({
