@@ -1,0 +1,40 @@
+services:
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: stavki-db-test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: stavki_test
+    ports:
+      - "5433:5432"
+    tmpfs: /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d stavki_test"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  backend-test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stavki-backend-test
+    env_file: .env.test
+    ports:
+      - "3002:3001"
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend-test:
+    build:
+      context: ./vue-app
+      dockerfile: Dockerfile
+    container_name: stavki-frontend-test
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend-test
+    restart: unless-stopped
