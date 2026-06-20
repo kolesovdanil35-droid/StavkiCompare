@@ -28,10 +28,11 @@ app.use('/api/saved-matches', savedRouter);
 app.use('/api/health', healthRouter);
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'public')));
+  const publicDir = path.join(__dirname, '..', 'public');
+  app.use(express.static(publicDir));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(publicDir, 'index.html'));
   });
 }
 
