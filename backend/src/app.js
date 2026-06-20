@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const matchesRouter = require('./routes/matches');
 const articlesRouter = require('./routes/articles');
 const podcastsRouter = require('./routes/podcasts');
@@ -25,6 +26,14 @@ app.use('/api/podcasts', podcastsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/saved-matches', savedRouter);
 app.use('/api/health', healthRouter);
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'public')));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
+}
 
 app.use(errorHandler);
 

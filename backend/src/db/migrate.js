@@ -51,7 +51,7 @@ const createTables = [
   `CREATE TABLE IF NOT EXISTS leagues (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
-    sport_id INT NOT NULL REFERENCES sports(id)
+    sport_id INT NOT NULL
   )`,
 
   `CREATE TABLE IF NOT EXISTS teams (
@@ -106,6 +106,7 @@ const createTables = [
 
   `ALTER TABLE matches DROP COLUMN IF EXISTS status CASCADE`,
   `DROP TYPE IF EXISTS match_status`,
+  `ALTER TABLE leagues DROP CONSTRAINT IF EXISTS leagues_sport_id_fkey`,
 ];
 
 async function seed() {

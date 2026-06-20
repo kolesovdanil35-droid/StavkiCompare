@@ -73,7 +73,7 @@
                 <span class="nav-button">Главная</span>
             </router-link>
             <router-link to="/news" class="nav-link" :class="{ active: route.path === '/news' }" @click="closeMobileMenu">
-                <span class="nav-button">Аналитика</span>
+                <span class="nav-button">Новости</span>
             </router-link>
                 
             <router-link to="/analis" class="nav-link" :class="{ active: route.path === '/analis' }" @click="closeMobileMenu">
