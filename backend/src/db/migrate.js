@@ -221,9 +221,6 @@ async function seedAnalysis() {
   ];
 
   for (const a of analysisData) {
-    const exists = await pool.query('SELECT id FROM analysis_matches WHERE match_id = $1', [a.matchId]);
-    if (exists.rows.length > 0) continue;
-
     const prediction = {
       winner: a.matchId % 2 === 1 ? 'team1' : 'team2',
       confidence: 55 + (a.matchId * 3) % 30,
@@ -234,6 +231,14 @@ async function seedAnalysis() {
     await pool.query(`
       INSERT INTO analysis_matches (match_id, team1_form, team2_form, team1_stats, team2_stats, h2h, prediction, factors)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      ON CONFLICT (match_id) DO UPDATE SET
+        team1_form = EXCLUDED.team1_form,
+        team2_form = EXCLUDED.team2_form,
+        team1_stats = EXCLUDED.team1_stats,
+        team2_stats = EXCLUDED.team2_stats,
+        h2h = EXCLUDED.h2h,
+        prediction = EXCLUDED.prediction,
+        factors = EXCLUDED.factors
     `, [a.matchId, a.team1Form, a.team2Form,
       JSON.stringify({ position: 3 + a.matchId, goalsScored: 12 + a.matchId * 2, goalsConceded: 8 + a.matchId, wins: 5 + a.matchId, streak: a.matchId % 2 === 0 ? '3 победы' : '2 поражения' }),
       JSON.stringify({ position: 5 + a.matchId, goalsScored: 10 + a.matchId, goalsConceded: 9 + a.matchId, wins: 4 + a.matchId, streak: a.matchId % 2 === 0 ? '1 ничья' : '2 победы' }),
@@ -283,23 +288,14 @@ async function migrate() {
     console.log('✓ Sports, leagues, teams, outcomes, bookmakers seeded');
   }
 
-  const { rows: matchRows } = await pool.query('SELECT COUNT(*)::int as cnt FROM matches');
-  if (matchRows[0].cnt === 0) {
-    await seedMatches();
-    console.log('✓ Matches seeded');
-  }
+  await seedMatches();
+  console.log('✓ Matches seeded');
 
-  const { rows: oddRows } = await pool.query('SELECT COUNT(*)::int as cnt FROM odds');
-  if (oddRows[0].cnt === 0) {
-    await seedOdds();
-    console.log('✓ Odds seeded');
-  }
+  await seedOdds();
+  console.log('✓ Odds seeded');
 
-  const { rows: analysisRows } = await pool.query('SELECT COUNT(*)::int as cnt FROM analysis_matches');
-  if (analysisRows[0].cnt === 0) {
-    await seedAnalysis();
-    console.log('✓ Analysis data seeded');
-  }
+  await seedAnalysis();
+  console.log('✓ Analysis data seeded');
 }
 
 module.exports = migrate;
