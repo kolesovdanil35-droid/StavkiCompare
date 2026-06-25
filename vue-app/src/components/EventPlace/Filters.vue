@@ -49,7 +49,7 @@ const filterEdit = (sport: string) => {
 
 <style lang="css" scoped>
 .filter-body {
-    justify-self: center;
+    margin: 0 auto;
     width: fit-content;
     max-width: 100%;
     background-color: var(--card-back-color);

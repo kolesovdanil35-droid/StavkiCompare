@@ -2,10 +2,10 @@
   <div class="profile-page">
     <div class="profile-header">
       <div class="avatar-section">
-        <div class="avatar">АИ</div>
+        <div class="avatar">{{ userInitials }}</div>
         <div class="user-info">
-          <h1 class="user-name">Алексей Иванов</h1>
-          <span class="user-email">alexey@example.com</span>
+          <h1 class="user-name">{{ state.user?.name || 'Пользователь' }}</h1>
+          <span class="user-email">{{ state.user?.email || '' }}</span>
         </div>
       </div>
       <div class="plan-badge" :class="currentPlan.toLowerCase()">
@@ -300,6 +300,15 @@ import { ref, reactive, computed } from 'vue'
 import FavoritesModal from '../components/Modal/FavoritesModal.vue'
 import PlanModal from '../components/Modal/PlanModal.vue'
 import SessionsModal from '../components/Modal/SessionsModal.vue'
+import { useAuth } from '../stores/auth'
+
+const { state } = useAuth()
+
+const userInitials = computed(() => {
+  const name = state.user?.name || ''
+  const parts = name.split(' ')
+  return parts.map(p => p[0]).join('').toUpperCase().slice(0, 2) || '?'
+})
 
 const currentPlan = ref('Unlimited')
 
