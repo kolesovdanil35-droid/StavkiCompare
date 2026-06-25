@@ -46,26 +46,13 @@ async function toggle(matchId: number): Promise<boolean> {
   const res = await axios.post(`${API_BASE}/api/saved-matches/${matchId}`)
   const saved = res.data.saved
 
-  if (saved) {
-    const matchRes = await axios.get(`${API_BASE}/api/matches/${matchId}/analysis`).catch(() => null)
-    if (matchRes?.data) {
-      state.matches.push({
-        id: matchId,
-        status: '',
-        team1: matchRes.data.team1,
-        team2: matchRes.data.team2,
-        odds1: '-',
-        odds2: '-',
-        time: matchRes.data.time || '',
-        sport: matchRes.data.sport || '',
-        league: matchRes.data.league || '',
-      })
-    } else {
-      await fetch()
-    }
-  } else {
+  if (saved && res.data.match) {
+    state.matches.push(res.data.match)
+  } else if (!saved) {
     const idx = state.matches.findIndex(m => m.id === matchId)
     if (idx !== -1) state.matches.splice(idx, 1)
+  } else {
+    await fetch()
   }
 
   return saved

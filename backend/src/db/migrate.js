@@ -157,19 +157,19 @@ async function seedMatches() {
   };
 
   const matchData = [
-    { id: 1, home: 'Спартак', away: 'Зенит', sportId: 1, leagueId: 1, time: d(-1, -2), sh: 1, sa: 0 },
-    { id: 2, home: 'Барселона', away: 'Реал Мадрид', sportId: 1, leagueId: 2, time: d(0, -1), sh: 2, sa: 1 },
-    { id: 3, home: 'Lakers', away: 'Celtics', sportId: 2, leagueId: 3, time: d(0, -3), sh: 108, sa: 102 },
-    { id: 4, home: 'Warriors', away: 'Bulls', sportId: 2, leagueId: 3, time: d(3, 4), sh: null, sa: null },
-    { id: 5, home: 'Джокович', away: 'Надаль', sportId: 3, leagueId: 4, time: d(2, 0), sh: null, sa: null },
-    { id: 6, home: 'Федерер', away: 'Джокович', sportId: 3, leagueId: 4, time: d(0, -2), sh: 1, sa: 2 },
-    { id: 7, home: 'NAVI', away: 'FaZe', sportId: 4, leagueId: 5, time: d(0, -4), sh: 13, sa: 9 },
-    { id: 8, home: 'Vitality', away: 'NAVI', sportId: 4, leagueId: 5, time: d(0, -1), sh: 7, sa: 13 },
-    { id: 9, home: 'Спартак', away: 'Барселона', sportId: 1, leagueId: 1, time: d(4, 0), sh: null, sa: null },
-    { id: 10, home: 'Зенит', away: 'Реал Мадрид', sportId: 1, leagueId: 2, time: d(7, 2), sh: null, sa: null },
-    { id: 11, home: 'Lakers', away: 'Warriors', sportId: 2, leagueId: 3, time: d(0, -6), sh: 115, sa: 110 },
-    { id: 12, home: 'Celtics', away: 'Bulls', sportId: 2, leagueId: 3, time: d(6, 8), sh: null, sa: null },
-    { id: 13, home: 'Надаль', away: 'Федерер', sportId: 3, leagueId: 4, time: d(3, 10), sh: null, sa: null },
+    { id: 1, home: 'Спартак', away: 'Зенит', sportId: 1, leagueId: 1, time: d(0, -3), sh: 2, sa: 1 },
+    { id: 2, home: 'Барселона', away: 'Реал Мадрид', sportId: 1, leagueId: 2, time: d(0, -1), sh: null, sa: null },
+    { id: 3, home: 'Lakers', away: 'Celtics', sportId: 2, leagueId: 3, time: d(0, -5), sh: 108, sa: 102 },
+    { id: 4, home: 'Warriors', away: 'Bulls', sportId: 2, leagueId: 3, time: d(0, -2), sh: 98, sa: 92 },
+    { id: 5, home: 'Джокович', away: 'Надаль', sportId: 3, leagueId: 4, time: d(1, 10), sh: null, sa: null },
+    { id: 6, home: 'Федерер', away: 'Джокович', sportId: 3, leagueId: 4, time: d(1, 14), sh: null, sa: null },
+    { id: 7, home: 'NAVI', away: 'FaZe', sportId: 4, leagueId: 5, time: d(1, 18), sh: null, sa: null },
+    { id: 8, home: 'Vitality', away: 'NAVI', sportId: 4, leagueId: 5, time: d(1, 20), sh: null, sa: null },
+    { id: 9, home: 'Спартак', away: 'Барселона', sportId: 1, leagueId: 1, time: d(3, 16), sh: null, sa: null },
+    { id: 10, home: 'Зенит', away: 'Реал Мадрид', sportId: 1, leagueId: 2, time: d(4, 18), sh: null, sa: null },
+    { id: 11, home: 'Lakers', away: 'Warriors', sportId: 2, leagueId: 3, time: d(5, 12), sh: null, sa: null },
+    { id: 12, home: 'Celtics', away: 'Bulls', sportId: 2, leagueId: 3, time: d(6, 15), sh: null, sa: null },
+    { id: 13, home: 'Надаль', away: 'Федерер', sportId: 3, leagueId: 4, time: d(7, 14), sh: null, sa: null },
   ];
 
   for (const m of matchData) {
