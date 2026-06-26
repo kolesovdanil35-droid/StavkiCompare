@@ -46,7 +46,7 @@ onMounted(async () => {
     </div>
     <template v-else>
       <EventPlace innerMathes="Live" :dataSourse="liveMatches"/>
-      <EventPlace innerMathes="Incoming" :dataSourse="upcomingMatches"/>
+      <EventPlace innerMathes="Предстоящие матчи" :dataSourse="upcomingMatches"/>
       <div v-if="savedMatchesStore.state.matches.length" class="saved-matches-section">
         <h2 class="section-title">Мои сохраненные матчи</h2>
         <EventPlace innerMathes="Сохраненные" :dataSourse="savedMatchesStore.state.matches"/>
